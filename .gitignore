@@ -1,0 +1,15 @@
+venv
+proto_python
+__pycache__
+
+led_config.json
+*.txt
+*.mp4
+
+**/*credentials*
+!network_credentials_example.h
+
+arduino/src/proto
+
+nanopb/
+
