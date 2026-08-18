@@ -19,7 +19,7 @@ If you are using capacitors, ensure they are also discharged.
 1. Install FastLED plugin
     ```bash
     arduino-cli lib update-index
-    arduino-cli install "FastLED"
+    arduino-cli lib install GxEPD2 "Adafruit GFX Library" "Adafruit BusIO"
     ```
 1. Run `make compile` to compile the arduino code
 1. Run `make upload` to upload the compiled binary to the esp32 board. You may need to configure `USB_PORT` in the `Makefile` - this can be found using `arduino-cli board list`

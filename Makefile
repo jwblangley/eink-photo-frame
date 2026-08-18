@@ -1,6 +1,6 @@
 .PHONY: clean compile upload monitor
 
-BOARD = esp32:esp32:XIAO_ESP32S3
+BOARD = esp32:esp32:XIAO_ESP32S3:CDCOnBoot=cdc,FlashSize=8M,PSRAM=opi
 BAUD = 115200
 USB_PORT = /dev/ttyACM0
 ARDUINO_DIR = ./arduino
