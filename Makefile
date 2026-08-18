@@ -12,4 +12,4 @@ upload:
 	arduino-cli upload -p $(USB_PORT) --fqbn $(BOARD) $(ARDUINO_DIR)
 
 monitor:
-	picocom $(USB_PORT) -b $(BAUD) --imap lfcrlf
+	arduino-cli monitor -p $(USB_PORT) --config baudrate=$(BAUD) --protocol serial
