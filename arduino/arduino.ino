@@ -5,11 +5,12 @@
 #include "src/network_credentials.h"
 
 #define PORT 8000
-#define UDP_MAX 1478
 #define BAUD 115200
 
 void setup() {
   Serial.begin(BAUD);
+  // Set GPIO 21 (Internal LED) as output
+  pinMode(21, OUTPUT);
 
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
@@ -24,6 +25,8 @@ void setup() {
 
 void loop() {
   delay(1000);
+  digitalWrite(21, !digitalRead(21));
+
   Serial.printf("HeartBeat. status=%d\n", WiFi.status());
   Serial.printf("WiFi connected. IP address: %s\n", WiFi.localIP().toString().c_str());
 }
