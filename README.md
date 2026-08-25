@@ -16,7 +16,7 @@ Never connect your computer to the ESP32 board over USB when external power is s
 If you are using capacitors, ensure they are also discharged.
 
 1. Follow <https://docs.arduino.cc/arduino-cli/getting-started> to get started - the board type is `esp32:esp32:XIAO_ESP32S3`
-1. Install FastLED plugin
+1. Install plugins
     ```bash
     arduino-cli lib update-index
     arduino-cli lib install GxEPD2 "Adafruit GFX Library" "Adafruit BusIO"
