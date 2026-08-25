@@ -1,15 +1,18 @@
-.PHONY: clean compile upload monitor
+.PHONY: compile upload monitor format
 
-BOARD = esp32:esp32:XIAO_ESP32S3:CDCOnBoot=cdc,FlashSize=8M,PSRAM=opi
+BOARD = esp32:esp32:XIAO_ESP32S3:CDCOnBoot=default,FlashSize=8M,PSRAM=opi
 BAUD = 115200
 USB_PORT = /dev/ttyACM0
 ARDUINO_DIR = ./arduino
 
 compile: arduino/*.ino
-	arduino-cli compile --fqbn $(BOARD) $(ARDUINO_DIR) --build-property build.extra_flags="-DESP32 -D__ESP32__"
+	arduino-cli compile --fqbn $(BOARD) $(ARDUINO_DIR)
 
 upload:
 	arduino-cli upload -p $(USB_PORT) --fqbn $(BOARD) $(ARDUINO_DIR)
 
 monitor:
-	arduino-cli monitor -p $(USB_PORT) --config baudrate=$(BAUD) --protocol serial
+	arduino-cli monitor -p $(USB_PORT) --config baudrate=$(BAUD) --config dtr=on --config rts=on
+
+format:
+	find $(ARDUINO_DIR) -type f | xargs clang-format -i
