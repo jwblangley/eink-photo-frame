@@ -13,6 +13,7 @@
 #define BAUD 115200
 #define LED 21
 
+
 void setup() {
   Serial.begin(BAUD);
   pinMode(LED, OUTPUT);
@@ -21,49 +22,23 @@ void setup() {
   esp_reset_reason_t reason = esp_reset_reason();
   Serial.printf("Reset reason: %d\n", reason);
 
-  UBYTE *temp; if((temp = (UBYTE*) ps_malloc(5)) == NULL) {
-      Serial.printf("Failed to apply for lang memory...\r\n");
-  }
-  else
-  {
-    Serial.printf("Successful lang malloc: %d\n", temp);
-  }
-  Serial.flush();
-  delay(50);
-
-  // Explicitly bind SPI to the XIAO S3 hardware pins (SCK=7, MISO=-1, MOSI=9, SS=4)
-  // SPI.begin(7, -1, 9, 4);
-  SPI.begin(8, -1, 10, 2);
+  SPI.begin(EPD_SCK_PIN, EPD_MISO_PIN, EPD_MOSI_PIN, -1);
 
   // Initialize the display board
   DEV_Module_Init();
 
-  Serial.printf("e-Paper Init and Clear...\r\n");
+  Serial.println("e-Paper Init");
   EPD_10IN2G_Init();
+  Serial.println("e-Paper Clear");
   EPD_10IN2G_Clear(EPD_10IN2G_WHITE); // White
-  DEV_Delay_ms(2000);
+  DEV_Delay_ms(1000);
 
   // Create a new image cache
   UBYTE *BlackImage;
   UDOUBLE Imagesize = ((EPD_10IN2G_WIDTH % 4 == 0)? (EPD_10IN2G_WIDTH / 4 ): (EPD_10IN2G_WIDTH / 4 + 1)) * EPD_10IN2G_HEIGHT;
-  Serial.printf("ImageSize=%d\n", Imagesize);
-  Serial.printf("Max alloc=%d\n", ESP.getMaxAllocPsram());
-  Serial.flush();
-  delay(500);
 
   if((BlackImage = (UBYTE*) ps_malloc(Imagesize)) == NULL) {
-      Serial.printf("Failed to apply for james memory...\r\n");
-  }
-  else
-  {
-    Serial.printf("Successful james malloc: %d\n", BlackImage);
-  }
-  Serial.flush();
-  delay(500);
-
-
-  if((BlackImage = (UBYTE*) ps_malloc(Imagesize)) == NULL) {
-      Serial.printf("Failed to apply for black memory...\r\n");
+      Serial.println("Failed to allocate memory\n");
       Serial.flush();
       while(1)
       {
@@ -73,7 +48,8 @@ void setup() {
         delay(100);
       }
   }
-  Serial.printf("Paint_NewImage\r\n");
+
+  Serial.println("Paint_NewImage");
   Serial.flush();
   delay(50);
   Paint_NewImage(BlackImage, EPD_10IN2G_WIDTH, EPD_10IN2G_HEIGHT, 0, EPD_10IN2G_WHITE);
@@ -104,6 +80,7 @@ void setup() {
 }
 
 void loop() {
-  delay(1000);
+  delay(2000);
   digitalWrite(LED, !digitalRead(LED));
+  Serial.println("Heartbeat");
 }
