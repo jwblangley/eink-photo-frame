@@ -43,7 +43,7 @@ def grayscale(img):
 
 
 def to_epaper(img):
-    return (img < 0.5).astype(np.ubyte)
+    return (img > 0.5).astype(np.ubyte)
 
 
 @app.route("/get")
