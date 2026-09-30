@@ -54,6 +54,6 @@ def get():
     img = get_random_image(height, width)
     img = grayscale(img)
     img = to_epaper(img)
-    print(img)
+    print(img.shape)
 
     return img.tobytes()
