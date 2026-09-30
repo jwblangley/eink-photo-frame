@@ -22,7 +22,7 @@ server: $(VENV)
 	$(BIN)/gunicorn -w 4 -b 0.0.0.0:$(PORT) app:app
 
 dev: $(VENV_DEV)
-	$(BIN_DEV)/python -m flask run
+	$(BIN_DEV)/python -m flask run --port $(PORT)
 
 format: $(VENV_DEV)
 	$(BIN_DEV)/ruff format
