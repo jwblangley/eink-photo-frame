@@ -27,4 +27,4 @@ monitor:
 	arduino-cli monitor -p $(USB_PORT) --config baudrate=$(BAUD) --config dtr=on --config rts=on
 
 format:
-	find $(ARDUINO_DIR) -type f | xargs clang-format -i
+	git ls-files | grep -e '\.ino$$' -e '\.cpp$$' -e '\.c$$' -e '\.h$$' | xargs clang-format -i
