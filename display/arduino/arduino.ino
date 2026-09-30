@@ -13,6 +13,9 @@
 #define BAUD 115200
 #define LED 21
 
+#define US_TO_S_FACTOR 1'000'000ULL
+#define WAKE_INTERVAL_S 2 * 3600
+
 void indicateStatus(const String& message, const size_t delayTime)
 {
   Serial.println(message);
@@ -123,6 +126,10 @@ void setup() {
   // close 5V, Module enters 0 power consumption
   DEV_Module_Exit();
   free(canvas);
+
+  // Enter deep sleep until next wake up
+  esp_sleep_enable_timer_wakeup(WAKE_INTERVAL_S * US_TO_S_FACTOR);
+  esp_deep_sleep_start();
 }
 
 void loop() {
