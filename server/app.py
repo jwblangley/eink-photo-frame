@@ -42,6 +42,10 @@ def grayscale(img):
     return np.dot(rgb, weights)
 
 
+def to_epaper(img):
+    return (img < 0.5).astype(np.ubyte)
+
+
 @app.route("/get")
 def get():
     height = request.args.get("height", default=500, type=int)
@@ -49,6 +53,7 @@ def get():
 
     img = get_random_image(height, width)
     img = grayscale(img)
+    img = to_epaper(img)
     print(img)
 
     return img.tobytes()

@@ -1,4 +1,4 @@
-.PHONY: format dev server
+.PHONY: dev mock server format
 
 VENV = venv
 BIN = $(VENV)/bin
@@ -23,6 +23,9 @@ server: $(VENV)
 
 dev: $(VENV_DEV)
 	$(BIN_DEV)/python -m flask run --port $(PORT)
+
+mock: $(VENV_DEV)
+	$(BIN_DEV)/python mock_display.py $(PORT)
 
 format: $(VENV_DEV)
 	$(BIN_DEV)/ruff format
