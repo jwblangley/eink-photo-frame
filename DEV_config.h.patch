@@ -1,0 +1,32 @@
+--- /home/james/Downloads/10in2_e-Paper_G/ESP32/DEV_Config.h	2025-03-11 15:56:00.000000000 +0000
++++ ./arduino/src/waveshare/10in2g/DEV_Config.h	2026-09-30 00:29:59.743226376 +0100
+@@ -46,21 +46,14 @@
+ /**
+  * GPIO config
+ **/
+-#define EPD_MOSI_PIN 14
+-#define EPD_SCK_PIN  13
+-#define EPD_CS_PIN   15
+-#define EPD_DC_PIN   27
+-#define EPD_RST_PIN  26
+-#define EPD_BUSY_PIN 25
+-
+-/**
+- * Enable it or not according to the actual hardware used, and the corresponding pin
+- */
+-#define D_9PIN  1
+-#if D_9PIN
+-    #define EPD_PWR_PIN 33
+-#endif
+-
++#define EPD_SCK_PIN   D8
++#define EPD_MOSI_PIN  D10
++#define EPD_MISO_PIN  -1
++#define EPD_CS_PIN    44
++#define EPD_DC_PIN    10
++#define EPD_RST_PIN   38
++#define EPD_BUSY_PIN  4
++#define EPD_PWR_PIN   43
+ 
+ #define GPIO_PIN_SET   1
+ #define GPIO_PIN_RESET 0

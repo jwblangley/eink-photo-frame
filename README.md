@@ -16,11 +16,6 @@ Never connect your computer to the ESP32 board over USB when external power is s
 If you are using capacitors, ensure they are also discharged.
 
 1. Follow <https://docs.arduino.cc/arduino-cli/getting-started> to get started - the board type is `esp32:esp32:XIAO_ESP32S3`
-1. Install plugins
-    ```bash
-    arduino-cli lib update-index
-    arduino-cli lib install GxEPD2 "Adafruit GFX Library" "Adafruit BusIO"
-    ```
 1. Run `make compile` to compile the arduino code
 1. Run `make upload` to upload the compiled binary to the esp32 board. You may need to configure `USB_PORT` in the `Makefile` - this can be found using `arduino-cli board list`
 1. To monitor the Serial output over USB, run `make monitor`
