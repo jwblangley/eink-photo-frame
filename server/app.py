@@ -18,7 +18,7 @@ def get_random_image(target_height, target_width):
 
     for file_path in all_files:
         try:
-            with Image.open(file_path) as img:
+            with Image.open(file_path).convert("RGB") as img:
                 img = ImageOps.fit(
                     img,
                     (target_width, target_height),
@@ -32,18 +32,51 @@ def get_random_image(target_height, target_width):
     raise RuntimeError(f"No Pillow-compatible images found in '{directory_path}'")
 
 
-def grayscale(img):
-    # Take only the first 3 channels (RGB) in case input is RGBA
-    rgb = img[..., :3]
+def to_epaper(img, shadow_gamma=0.65, contrast_factor=1.2, highlight_threshold=0.90):
 
-    # Perceptual weights
-    weights = np.array([0.299, 0.587, 0.114], dtype=np.float32)
+    # Linearize sRGB (Gamma Decode)
+    linear_rgb = np.where(
+        img <= 0.04045, img / 12.92, np.power((img + 0.055) / 1.055, 2.4)
+    )
 
-    return np.dot(rgb, weights)
+    # Compute Perceptual Linear Luminance
+    luminance = (
+        0.2126 * linear_rgb[:, :, 0]
+        + 0.7152 * linear_rgb[:, :, 1]
+        + 0.0722 * linear_rgb[:, :, 2]
+    )
 
+    # Gamma Correction to lift shadow midtones
+    luminance = np.power(luminance, shadow_gamma)
 
-def to_epaper(img):
-    return (img > 0.5).astype(np.ubyte)
+    # Apply S-curve / Midtone Contrast Adjustment
+    luminance = 0.5 + contrast_factor * (luminance - 0.5)
+    luminance = np.clip(luminance, 0.0, 1.0)
+
+    # Highlight Clamping (highlights avoid dithering)
+    luminance[luminance > highlight_threshold] = 1.0
+
+    # Atkinson Dithering
+    height, width = luminance.shape
+    padded = np.pad(luminance, ((0, 2), (1, 2)), mode="edge")
+
+    for y in range(height):
+        for x in range(1, width + 1):
+            old = padded[y, x]
+            new = 1.0 if old > 0.5 else 0.0
+            padded[y, x] = new
+
+            err = (old - new) / 8.0
+
+            padded[y, x + 1] += err
+            padded[y, x + 2] += err
+            padded[y + 1, x - 1] += err
+            padded[y + 1, x] += err
+            padded[y + 1, x + 1] += err
+            padded[y + 2, x] += err
+
+    # Crop back padding
+    return (padded[:height, 1 : width + 1]).astype(np.ubyte)
 
 
 @app.route("/get")
@@ -52,7 +85,6 @@ def get():
     width = request.args.get("width", default=500, type=int)
 
     img = get_random_image(height, width)
-    img = grayscale(img)
     img = to_epaper(img)
     print(img.shape)
 
