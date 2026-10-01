@@ -20,6 +20,7 @@ EPAPER_LUT = (
         ],
         dtype=np.float32,
     )
+    * 0.7
     / 255.0
 )
 

@@ -22,7 +22,7 @@ app = Flask(__name__)
 def get_random_image(target_height, target_width):
     directory = Path() / "images"
 
-    all_files = [f for f in directory.glob("*") if f.is_file()]
+    all_files = [f for f in directory.rglob("*") if f.is_file()]
     random.shuffle(all_files)
 
     for file_path in all_files:
@@ -42,7 +42,14 @@ def get_random_image(target_height, target_width):
     raise RuntimeError(f"No Pillow-compatible images found in '{directory_path}'")
 
 
-def to_epaper(img, shadow_gamma=0.65, contrast_factor=1.2, highlight_threshold=0.90):
+def to_epaper(
+    img,
+    gamma=0.6,
+    contrast_factor=1.3,
+    highlight_threshold=0.90,
+    shadow_threshold=0.10,
+    target_mid_gray=0.22,
+):
 
     # Linearize sRGB (Gamma Decode)
     linear_rgb = np.where(
@@ -56,15 +63,30 @@ def to_epaper(img, shadow_gamma=0.65, contrast_factor=1.2, highlight_threshold=0
         + 0.0722 * linear_rgb[:, :, 2]
     )
 
+    # Adjust exposure
+    low_bound = np.percentile(luminance, 1)
+    high_bound = np.percentile(luminance, 99)
+    non_outlier_mask = (luminance >= low_bound) & (luminance <= high_bound)
+    non_outlier_pixels = luminance[non_outlier_mask]
+    if not non_outlier_pixels.any():
+        non_outlier_pixels = luminance
+    log_mean_exposure = np.mean(np.log2(non_outlier_pixels))
+    target_exposure = np.log2(target_mid_gray)
+    exposure_shift = target_exposure - log_mean_exposure
+    logging.info(f"Adjusting exposure by {exposure_shift:.2f} stops")
+    luminance = luminance * (2**exposure_shift)
+    luminance = np.clip(luminance, 0.0, 1.0)
+
     # Gamma Correction to lift shadow midtones
-    luminance = np.power(luminance, shadow_gamma)
+    luminance = np.power(luminance, gamma)
 
     # Apply S-curve / Midtone Contrast Adjustment
     luminance = 0.5 + contrast_factor * (luminance - 0.5)
     luminance = np.clip(luminance, 0.0, 1.0)
 
-    # Highlight Clamping (highlights avoid dithering)
+    # Highlight and Shadow Clamping (avoid dithering)
     luminance[luminance > highlight_threshold] = 1.0
+    luminance[luminance < shadow_threshold] = 0.0
 
     # Atkinson Dithering
     height, width = luminance.shape
