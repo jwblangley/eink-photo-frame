@@ -64,8 +64,8 @@ def to_epaper(
     )
 
     # Adjust exposure
-    low_bound = np.percentile(luminance, 1)
-    high_bound = np.percentile(luminance, 99)
+    low_bound = np.percentile(luminance, 10)
+    high_bound = np.percentile(luminance, 90)
     non_outlier_mask = (luminance >= low_bound) & (luminance <= high_bound)
     non_outlier_pixels = luminance[non_outlier_mask]
     if not non_outlier_pixels.any():
