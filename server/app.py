@@ -1,10 +1,19 @@
 from flask import Flask, request
 
+import sys
+import logging
 import random
 
 from PIL import Image, UnidentifiedImageError, ImageOps
 from pathlib import Path
 import numpy as np
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
 
 
 app = Flask(__name__)
@@ -25,6 +34,7 @@ def get_random_image(target_height, target_width):
                     method=Image.Resampling.LANCZOS,
                     centering=(0.5, 0.5),
                 )
+                logging.info(f"Serving {file_path}")
                 return np.asarray(img, dtype=np.float32) / 255.0
         except UnidentifiedImageError:
             continue
@@ -83,9 +93,9 @@ def to_epaper(img, shadow_gamma=0.65, contrast_factor=1.2, highlight_threshold=0
 def get():
     height = request.args.get("height", default=500, type=int)
     width = request.args.get("width", default=500, type=int)
+    logging.info(f"Request for {width=} {height=}")
 
     img = get_random_image(height, width)
     img = to_epaper(img)
-    print(img.shape)
 
     return img.tobytes()
