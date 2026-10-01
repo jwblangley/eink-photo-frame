@@ -27,9 +27,10 @@ EPAPER_LUT = (
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("port", type=int)
+    parser.add_argument("rotate", type=int)
     args = parser.parse_args()
 
-    url = f"http://127.0.0.1:{args.port}/get?width={WIDTH}&height={HEIGHT}"
+    url = f"http://127.0.0.1:{args.port}/get?width={WIDTH}&height={HEIGHT}&rotate={args.rotate}"
     with urllib.request.urlopen(url) as response:
         img = np.frombuffer(response.read(), dtype=np.ubyte)
         img.resize(HEIGHT, WIDTH)

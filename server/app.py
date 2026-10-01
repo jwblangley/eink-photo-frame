@@ -19,11 +19,16 @@ logging.basicConfig(
 app = Flask(__name__)
 
 
-def get_random_image(target_height, target_width):
+def get_random_image(target_height, target_width, rotate):
     directory = Path() / "images"
 
     all_files = [f for f in directory.rglob("*") if f.is_file()]
     random.shuffle(all_files)
+
+    if rotate % 2 == 1:
+        tmp = target_height
+        target_height = target_width
+        target_width = tmp
 
     for file_path in all_files:
         try:
@@ -35,7 +40,7 @@ def get_random_image(target_height, target_width):
                     centering=(0.5, 0.5),
                 )
                 logging.info(f"Serving {file_path}")
-                return np.asarray(img, dtype=np.float32) / 255.0
+                return np.rot90(np.asarray(img, dtype=np.float32), k=rotate) / 255.0
         except UnidentifiedImageError:
             continue
 
@@ -48,7 +53,7 @@ def to_epaper(
     contrast_factor=1.3,
     highlight_threshold=0.90,
     shadow_threshold=0.10,
-    target_mid_gray=0.22,
+    target_mid_gray=0.18,
 ):
 
     # Linearize sRGB (Gamma Decode)
@@ -115,9 +120,10 @@ def to_epaper(
 def get():
     height = request.args.get("height", default=500, type=int)
     width = request.args.get("width", default=500, type=int)
-    logging.info(f"Request for {width=} {height=}")
+    rotate = request.args.get("rotate", default=0, type=int)
+    logging.info(f"Request for {width=} {height=} {rotate=}")
 
-    img = get_random_image(height, width)
+    img = get_random_image(height, width, rotate)
     img = to_epaper(img)
 
     return img.tobytes()

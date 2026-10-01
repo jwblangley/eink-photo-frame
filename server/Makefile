@@ -24,8 +24,9 @@ server: $(VENV)
 dev: $(VENV_DEV)
 	$(BIN_DEV)/python -m flask run --port $(PORT)
 
+ROTATE=0
 mock: $(VENV_DEV)
-	$(BIN_DEV)/python mock_display.py $(PORT)
+	$(BIN_DEV)/python mock_display.py $(PORT) $(ROTATE)
 
 format: $(VENV_DEV)
 	$(BIN_DEV)/ruff format

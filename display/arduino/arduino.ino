@@ -10,6 +10,8 @@
 
 #include "src/network_credentials.h"
 
+#define ROTATE 1
+
 #define BAUD 115200
 #define LED 21
 
@@ -67,7 +69,7 @@ void setup() {
 
   // HTTP Request
   HTTPClient http;
-  const String url = String(ENDPOINT) + "/get?width=" + EPD_10IN2G_WIDTH + "&height=" + EPD_10IN2G_HEIGHT;
+  const String url = String(ENDPOINT) + "/get?width=" + EPD_10IN2G_WIDTH + "&height=" + EPD_10IN2G_HEIGHT + "&rotate=" + ROTATE;
   http.begin(url);
   const int httpResponseCode = http.GET();
 
