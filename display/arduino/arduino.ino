@@ -16,7 +16,7 @@
 #define LED 21
 
 #define US_TO_S_FACTOR 1'000'000ULL
-#define WAKE_INTERVAL_S 2 * 3600
+#define WAKE_INTERVAL_S 4 * 3600
 
 void indicateStatus(const String& message, const size_t delayTime)
 {
