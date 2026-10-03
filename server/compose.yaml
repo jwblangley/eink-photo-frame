@@ -1,0 +1,11 @@
+services:
+  eink-display-server:
+    build:
+      context: .
+      args:
+        PORT: 8000
+    ports:
+      - 8000:8000
+    restart: always
+    volumes:
+      - ./images:/app/images:ro
