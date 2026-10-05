@@ -8,4 +8,20 @@ services:
       - 8000:8000
     restart: always
     volumes:
-      - ./images:/app/images:ro
+      - images:/app/images:ro
+  filebrowser:
+    image: ghcr.io/gtsteffaniak/filebrowser:latest
+    ports:
+      - 8001:80
+    restart: always
+    environment:
+      - FILEBROWSER_ADMIN_PASSWORD=somethingPrivate # CHANGE ME
+    user: "0:0"
+    volumes:
+      - ./filebrowser-config.yaml:/home/filebrowser/data/config.yaml:ro
+      - filebrowser-data:/home/filebrowser/data
+      - images:/folder
+
+volumes:
+  images:
+  filebrowser-data:

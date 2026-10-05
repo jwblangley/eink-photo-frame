@@ -1,0 +1,10 @@
+server:
+  sources:
+    - path: /folder
+      config:
+        defaultEnabled: true
+auth:
+  methods:
+    password:
+      enabled: true
+      minLength: 4
