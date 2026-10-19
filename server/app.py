@@ -159,11 +159,11 @@ def color_mask(img, color_map):
 
     # Green channel for yellow
     yellow_mask = color_map[:, :, 1]
-    img[yellow_mask >= 0.5] *= YELLOW
+    img[(yellow_mask >= 0.5) & (img >= 0.5)] = YELLOW
 
     # Red channel for red
     red_mask = color_map[:, :, 0]
-    img[red_mask >= 0.5] *= RED
+    img[(red_mask >= 0.5) & (img >= 0.5)] = RED
     return img
 
 
