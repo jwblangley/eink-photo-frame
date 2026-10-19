@@ -20,6 +20,28 @@
 
 #define FAILED_CONNECTION_TIMEOUT_MS 15'000
 
+UBYTE paintFromNetwork(const UBYTE netByte)
+{
+  if (netByte == 0)
+  {
+    return EPD_10IN2G_BLACK;
+  }
+  if (netByte == 1)
+  {
+    return EPD_10IN2G_WHITE;
+  }
+  if (netByte == 2)
+  {
+    return EPD_10IN2G_YELLOW;
+  }
+  if (netByte == 3)
+  {
+    return EPD_10IN2G_RED;
+  }
+  Serial.println("Unknown paint from network. Defaulting to black");
+  return EPD_10IN2G_BLACK;
+}
+
 void indicateStatus(const String& message, const size_t delayTime)
 {
   Serial.println(message);
@@ -105,7 +127,7 @@ void setup() {
     while (stream->available() > 0)
     {
       const UBYTE b = stream->read();
-      const UBYTE paint = b > 0 ? EPD_10IN2G_WHITE : EPD_10IN2G_BLACK;
+      const UBYTE paint = paintFromNetwork(b);
       canvas[bytesRead / 4] |= (paint << (2 * (3 - (bytesRead % 4))));
       bytesRead++;
     }
