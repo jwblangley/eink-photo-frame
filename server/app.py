@@ -1,19 +1,24 @@
-from flask import Flask, request
-
-import sys
 import logging
 import random
-
-from PIL import Image, UnidentifiedImageError, ImageOps
+import sys
 from pathlib import Path
-import numpy as np
 
+import numpy as np
+from flask import Flask, request
+from PIL import Image, ImageOps, UnidentifiedImageError
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[logging.StreamHandler(sys.stdout)],
 )
+
+BLACK = 0
+WHITE = 1
+YELLOW = 2
+RED = 3
+
+MASK_PATH = ".mask"
 
 
 app = Flask(__name__)
@@ -31,7 +36,12 @@ def get_random_image(target_height, target_width, rotate):
         target_width = tmp
 
     for file_path in all_files:
+        if file_path.stem.endswith(MASK_PATH):
+            continue
         try:
+            color_mask_path = (
+                file_path.parent / f"{file_path.stem}{MASK_PATH}{file_path.suffix}"
+            )
             with Image.open(file_path).convert("RGB") as img:
                 img = ImageOps.fit(
                     img,
@@ -39,12 +49,37 @@ def get_random_image(target_height, target_width, rotate):
                     method=Image.Resampling.LANCZOS,
                     centering=(0.5, 0.5),
                 )
-                logging.info(f"Serving {file_path}")
-                return np.rot90(np.asarray(img, dtype=np.float32), k=rotate) / 255.0
+                img = np.rot90(np.asarray(img, dtype=np.float32), k=rotate) / 255.0
+
+            color_mask = None
+            if color_mask_path.is_file():
+                with Image.open(color_mask_path).convert("RGB") as color_mask:
+                    color_mask = ImageOps.fit(
+                        color_mask,
+                        (target_width, target_height),
+                        method=Image.Resampling.LANCZOS,
+                        centering=(0.5, 0.5),
+                    )
+                    color_mask = (
+                        np.rot90(np.asarray(color_mask, dtype=np.float32), k=rotate)
+                        / 255.0
+                    )
+
+            if color_mask is not None and img.shape != color_mask.shape:
+                raise RuntimeError(
+                    f"Incorrectly shaped color mask for {file_path=}, {color_mask_path=}"
+                )
+
+            logging.info(
+                f"Serving {file_path}"
+                + ("" if color_mask is None else f" with color mask: {color_mask_path}")
+            )
+            return img, color_mask
+
         except UnidentifiedImageError:
             continue
 
-    raise RuntimeError(f"No Pillow-compatible images found in '{directory_path}'")
+    raise RuntimeError(f"No Pillow-compatible images found in '{directory}'")
 
 
 def to_epaper(
@@ -116,6 +151,19 @@ def to_epaper(
     return (padded[:height, 1 : width + 1]).astype(np.ubyte)
 
 
+def color_mask(img, color_map):
+    img = np.array(img)
+
+    # Green channel for yellow
+    yellow_mask = color_map[:, :, 1]
+    img[yellow_mask >= 0.5] *= YELLOW
+
+    # Red channel for red
+    red_mask = color_map[:, :, 0]
+    img[red_mask >= 0.5] *= RED
+    return img
+
+
 @app.route("/get")
 def get():
     height = request.args.get("height", default=500, type=int)
@@ -123,7 +171,8 @@ def get():
     rotate = request.args.get("rotate", default=0, type=int)
     logging.info(f"Request for {width=} {height=} {rotate=}")
 
-    img = get_random_image(height, width, rotate)
+    img, color_map = get_random_image(height, width, rotate)
     img = to_epaper(img)
+    img = color_mask(img, color_map)
 
     return img.tobytes()

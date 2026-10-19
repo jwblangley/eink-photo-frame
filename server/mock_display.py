@@ -6,8 +6,8 @@ for quicker feedback loops when tuning the image processing
 import argparse
 import urllib.request
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 WIDTH = 960
 HEIGHT = 640
@@ -15,8 +15,10 @@ HEIGHT = 640
 EPAPER_LUT = (
     np.array(
         [
-            [28, 30, 32],
-            [210, 214, 202],
+            [28, 30, 32],  # black
+            [210, 214, 202],  # white
+            [225, 205, 75],  # yellow
+            [185, 45, 40],  # red
         ],
         dtype=np.float32,
     )
