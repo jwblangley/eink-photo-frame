@@ -154,6 +154,9 @@ def to_epaper(
 def color_mask(img, color_map):
     img = np.array(img)
 
+    if color_map is None:
+        return img
+
     # Green channel for yellow
     yellow_mask = color_map[:, :, 1]
     img[yellow_mask >= 0.5] *= YELLOW
