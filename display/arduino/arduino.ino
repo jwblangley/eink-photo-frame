@@ -18,6 +18,8 @@
 #define US_TO_S_FACTOR 1'000'000ULL
 #define WAKE_INTERVAL_S 4 * 3600
 
+#define FAILED_CONNECTION_TIMEOUT_MS 15'000
+
 void indicateStatus(const String& message, const size_t delayTime)
 {
   Serial.println(message);
@@ -34,6 +36,9 @@ void setup() {
 
   SPI.begin(EPD_SCK_PIN, EPD_MISO_PIN, EPD_MOSI_PIN, -1);
 
+  // Time to catch upload/monitor
+  delay(5'000);
+
   // --- WiFi Setup ---
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
@@ -41,8 +46,14 @@ void setup() {
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.println("WiFi attempting to connect");
+  const auto before = millis();
   while (WiFi.status() != WL_CONNECTED) {
     indicateStatus("connecting...", 250);
+    if (millis() - before >= FAILED_CONNECTION_TIMEOUT_MS) {
+      Serial.printf("Failed to connect in %dms. Aborting\n", FAILED_CONNECTION_TIMEOUT_MS);
+      Serial.flush();
+      return;
+    }
   }
   Serial.printf("\nWiFi connected. IP address: %s\n",
   WiFi.localIP().toString().c_str());
@@ -61,7 +72,7 @@ void setup() {
       EPD_10IN2G_HEIGHT;
 
   if ((canvas = (UBYTE *)ps_malloc(imageSize)) == nullptr) {
-    Serial.println("Failed to allocate memory\n");
+    Serial.println("Failed to allocate memory");
     return;
   }
   Serial.println("Zeroing canvas");
@@ -128,13 +139,11 @@ void setup() {
   // close 5V, Module enters 0 power consumption
   DEV_Module_Exit();
   free(canvas);
-
-  // Enter deep sleep until next wake up
-  esp_sleep_enable_timer_wakeup(WAKE_INTERVAL_S * US_TO_S_FACTOR);
-  esp_deep_sleep_start();
 }
 
 void loop() {
-  delay(2000);
-  Serial.println("Heartbeat");
+  // Enter deep sleep until next wake up
+  // Runs on early exit (failure) or successful write
+  esp_sleep_enable_timer_wakeup(WAKE_INTERVAL_S * US_TO_S_FACTOR);
+  esp_deep_sleep_start();
 }
