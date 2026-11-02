@@ -110,7 +110,8 @@ def to_epaper(
     non_outlier_pixels = luminance[non_outlier_mask]
     if not non_outlier_pixels.any():
         non_outlier_pixels = luminance
-    log_mean_exposure = np.mean(np.log2(non_outlier_pixels))
+    # Clip to avoid log2(0)
+    log_mean_exposure = np.mean(np.log2(non_outlier_pixels.clip(0.001, 1)))
     target_exposure = np.log2(target_mid_gray)
     exposure_shift = target_exposure - log_mean_exposure
     logging.info(f"Adjusting exposure by {exposure_shift:.2f} stops")
