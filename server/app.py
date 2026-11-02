@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import scipy
 from flask import Flask, request
 from PIL import Image, ImageOps, UnidentifiedImageError
 
@@ -153,19 +154,20 @@ def to_epaper(
 
 
 def color_mask(img, color_map):
-    img = np.array(img)
+    img = np.array(img, dtype=np.float64)
+    blurred = scipy.ndimage.gaussian_filter(img, sigma=0.5)
 
     if color_map is None:
         return img
 
     # Green channel for yellow
     yellow_mask = color_map[:, :, 1]
-    img[(yellow_mask >= 0.5) & (img >= 0.5)] = YELLOW
+    img[(yellow_mask >= 0.5) & (blurred >= 0.4) & (blurred <= 1.0)] = YELLOW
 
     # Red channel for red
     red_mask = color_map[:, :, 0]
-    img[(red_mask >= 0.5) & (img >= 0.5)] = RED
-    return img
+    img[(red_mask >= 0.5) & (blurred >= 0.05) & (blurred <= 0.7)] = RED
+    return img.astype(np.ubyte)
 
 
 @app.route("/get")
