@@ -18,7 +18,7 @@ EPAPER_LUT = (
             [28, 30, 32],  # black
             [210, 214, 202],  # white
             [225, 205, 75],  # yellow
-            [185, 45, 40],  # red
+            [148, 36, 32],  # red
         ],
         dtype=np.float32,
     )
