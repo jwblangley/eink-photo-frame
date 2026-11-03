@@ -154,11 +154,11 @@ def to_epaper(
 
 
 def color_mask(img, color_map):
-    img = np.array(img, dtype=np.float64)
-    blurred = scipy.ndimage.gaussian_filter(img, sigma=0.5)
-
     if color_map is None:
         return img
+
+    img = np.array(img, dtype=np.float64)
+    blurred = scipy.ndimage.gaussian_filter(img, sigma=0.5)
 
     # Green channel for yellow
     yellow_mask = color_map[:, :, 1]
